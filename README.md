@@ -23,8 +23,10 @@ Stwórz podstawową aplikację w **Flutter (Dart)** z **natywną funkcją** oraz
 - Pokaż komunikację z **API** (pobranie/zapis), zachowanie bez internetu/bez uprawnień.
 
 ## Definition of Done (DoD)
-- [ ] 3–4 widoki, kompletna nawigacja.
-- [ ] Co najmniej 1 **natywna funkcja**.
-- [ ] Co najmniej 1 operacja **API** (GET/POST).
-- [ ] Stany: ładowanie, błąd, pusty.
-- [ ] `README.md`, zrzuty ekranów, min. 3 commity.
+- [x] 3–4 widoki, kompletna nawigacja.
+- [x] Co najmniej 1 **natywna funkcja**.
+- [x] Co najmniej 1 operacja **API** (GET/POST).
+- [x] Stany: ładowanie, błąd, pusty.
+- [x] `README.md`, zrzuty ekranów, min. 3 commity.
+
+# README.md z opisem projektu znajduje się wewnątrz `flutter_geo_journal`
