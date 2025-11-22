@@ -24,7 +24,8 @@ class JournalService {
   }
 
   // Dodanie nowego wpisu
-  Future<bool> addEntry(JournalEntry entry) async {
+  // Future<bool> addEntry(JournalEntry entry) async {
+  Future<JournalEntry?> addEntry(JournalEntry entry) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/posts'),
@@ -33,10 +34,16 @@ class JournalService {
           "Content-Type": "application/json; charset=UTF-8"
         },
       );
-      return response.statusCode == 201;
+
+      if (response.statusCode == 201) {
+        return entry;
+      } 
+      else {
+        return null;
+      }
     } 
     catch (e) {
-      return false;
+      return null;
     }
   }
 

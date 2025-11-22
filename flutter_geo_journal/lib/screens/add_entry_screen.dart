@@ -59,18 +59,21 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       imagePath: _selectedImage?.path,
     );
 
-    final success = await _journalService.addEntry(newEntry);
+    // final success = await _journalService.addEntry(newEntry);
+    final createdEntry = await _journalService.addEntry(newEntry);
 
     setState(() {
       _isSubmitting = false;
     });
 
-    if (success) {
+    // if (success) {
+    if (createdEntry != null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Wpis dodany pomyślnie! (testowo)')),
         );
-        Navigator.of(context).pop(true);
+        // Navigator.of(context).pop(true);
+        Navigator.of(context).pop(createdEntry);
       }
     } 
     else {
