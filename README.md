@@ -29,4 +29,4 @@ Stwórz podstawową aplikację w **Flutter (Dart)** z **natywną funkcją** oraz
 - [x] Stany: ładowanie, błąd, pusty.
 - [x] `README.md`, zrzuty ekranów, min. 3 commity.
 
-## README.md z opisem projektu znajduje się wewnątrz `flutter_geo_journal`
+#### README.md z opisem projektu znajduje się wewnątrz `flutter_geo_journal`
