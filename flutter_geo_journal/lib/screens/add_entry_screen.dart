@@ -6,7 +6,8 @@ import '../models/journal_entry.dart';
 import '../services/journal_service.dart';
 
 class AddEntryScreen extends StatefulWidget {
-  const AddEntryScreen({super.key});
+  final JournalEntry? entryToEdit;
+  const AddEntryScreen({super.key, this.entryToEdit});
 
   @override
   State<AddEntryScreen> createState() => _AddEntryScreenState();
@@ -15,12 +16,22 @@ class AddEntryScreen extends StatefulWidget {
 class _AddEntryScreenState extends State<AddEntryScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-
   File? _selectedImage;
-
   bool _isSubmitting = false;
-
   final JournalService _journalService = JournalService();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.entryToEdit != null) {
+      _titleController.text = widget.entryToEdit!.title;
+      _descriptionController.text = widget.entryToEdit!.description;
+
+      if (widget.entryToEdit!.imagePath != null) {
+        _selectedImage = File(widget.entryToEdit!.imagePath!);
+      }
+    }
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     try {
@@ -51,29 +62,44 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
       _isSubmitting = true;
     });
 
-    final newEntry = JournalEntry(
-      id: const Uuid().v4(),
-      title: _titleController.text,
-      description: _descriptionController.text,
-      date: DateTime.now(),
-      imagePath: _selectedImage?.path,
-    );
+    JournalEntry? result;
 
+    if (widget.entryToEdit != null) {
+      final updateEntry = JournalEntry(
+        id: widget.entryToEdit!.id,
+        title: _titleController.text,
+        description: _descriptionController.text,
+        date: widget.entryToEdit!.date,
+        imagePath: _selectedImage?.path,
+      );
+      result = await _journalService.updateEntry(updateEntry);
+
+    }
+    else {
+      final newEntry = JournalEntry(
+        id: const Uuid().v4(),
+        title: _titleController.text,
+        description: _descriptionController.text,
+        date: DateTime.now(),
+        imagePath: _selectedImage?.path,
+      );
+      result = await _journalService.addEntry(newEntry);
+    }
     // final success = await _journalService.addEntry(newEntry);
-    final createdEntry = await _journalService.addEntry(newEntry);
+    // final createdEntry = await _journalService.addEntry(result!);
 
     setState(() {
       _isSubmitting = false;
     });
 
     // if (success) {
-    if (createdEntry != null) {
+    if (result != null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Wpis dodany pomyślnie! (testowo)')),
+          SnackBar(content: Text(widget.entryToEdit != null ? 'Zaktualizowano wpis.' : 'Dodano nowy wpis.')),
         );
         // Navigator.of(context).pop(true);
-        Navigator.of(context).pop(createdEntry);
+        Navigator.of(context).pop(result);
       }
     } 
     else {
@@ -87,9 +113,12 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isEditing = widget.entryToEdit != null;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dodaj nowy wpis')
+        // title: const Text('Dodaj nowy wpis')
+        title: Text(widget.entryToEdit != null ? 'Edytuj wpis' : 'Dodaj nowy wpis'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -156,8 +185,8 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                   ? const CircularProgressIndicator(
                     color: Colors.white
                   )
-                  : const Text(
-                    'Zapisz wpis',
+                  : Text(
+                    isEditing ? 'Zaktualizuj wpis' : 'Zapisz wpis',
                     style: TextStyle(fontSize: 18)
                   ),
               ),
