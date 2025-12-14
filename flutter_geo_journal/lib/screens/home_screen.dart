@@ -14,8 +14,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final JournalService _journalService = JournalService();
-  // late Future<List<JournalEntry>> _entriesFuture;
-
   List<JournalEntry> _entries = [];
   bool _isLoading = true;
   String? _errorMessage;
@@ -23,27 +21,22 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // _entriesFuture = _journalService.getEntries();
     _loadInitialData();
   }
 
-
-  // Future<void> _refreshEntries() async {
   Future<void> _loadInitialData() async {
     setState(() {
-      // _entriesFuture = _journalService.getEntries();
       _isLoading = true;
       _errorMessage = null;
     });
-    
+
     try {
       final entries = await _journalService.getEntries();
       setState(() {
         _entries = entries;
         _isLoading = false;
       });
-    } 
-    catch (e) {
+    } catch (e) {
       setState(() {
         _errorMessage = e.toString();
         _isLoading = false;
@@ -51,16 +44,33 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // --- ZADANIE 3: Funkcja z błędem ---
+  String _calculateStats() {
+    // BŁĄD: Inicjalizacja jako String "0", co sugeruje tekst
+    String total = "0"; 
+
+    print("DEBUG: Rozpoczynam liczenie znaków w tytułach...");
+
+    for (var entry in _entries) {
+      // BŁĄD LOGICZNY: Zamiast dodawać liczby, zamieniamy je na tekst i sklejamy
+      // W Darcie '+' dla Stringów łączy napisy.
+      total += entry.title.length.toString();
+    }
+
+    print("DEBUG: Obliczona suma znaków: $total");
+    return total;
+  }
+  // -----------------------------------
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Geo Journal'),
         centerTitle: true,
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      // body: FutureBuilder<List<JournalEntry>>(
       body: _buildBody(),
-
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final newEntry = await Navigator.push(
@@ -85,63 +95,64 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     if (_errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, color: Colors.red, size: 48),
-            const SizedBox(height: 10.0),
-            Text('Błąd: $_errorMessage'),
-            ElevatedButton(
-              onPressed: _loadInitialData, 
-              child: const Text('Spróbuj ponownie')
-            )
-          ],
-        ),
-      );
-    }
-
-    // final entries = snapshot.data ?? [];
-
-    if (_entries.isEmpty) {
-      return const Center(child: Text('Brak wpisów w dzienniku. Dodaj pierwszy wpis!'));
+      return Center(child: Text('Błąd: $_errorMessage'));
     }
 
     return RefreshIndicator(
-      // onRefresh: _refreshEntries,
       onRefresh: _loadInitialData,
-      child: ListView.builder(
-        itemCount: _entries.length,
-        itemBuilder: (context, index) {
-          final entry = _entries[index];
-          return Card(
-            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            child: ListTile(
-              leading: entry.imagePath != null
-              ? const CircleAvatar(
-                child: Icon(Icons.camera_alt))
-              : const CircleAvatar(
-                child: Icon(Icons.place)),
-              title: Text(
-                entry.title,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text(
-                DateFormat('dd.MM.yyyy – HH:mm').format(entry.date),
-              ),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {
-                // print('Kliknięto wpis: ${entry.title}');
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EntryDetailsScreen(entry: entry)
+      child: ListView(
+        padding: const EdgeInsets.all(10),
+        children: [
+          // --- ZADANIE 3: Wyświetlenie błędnych statystyk ---
+          Card(
+            color: Colors.red.shade100,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Statystyki (Zadanie 3):", 
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 5),
+                  Text("Suma znaków w tytułach:"),
+                  Text(
+                    _calculateStats(), // Wywołanie funkcji z błędem
+                    style: const TextStyle(
+                      color: Colors.red, 
+                      fontWeight: FontWeight.bold, 
+                      fontSize: 18
+                    ),
                   ),
-                );
-              },
+                ],
+              ),
             ),
-          );
-        },
+          ),
+          const SizedBox(height: 10),
+          // --------------------------------------------------
+
+          if (_entries.isEmpty)
+            const Center(child: Padding(
+              padding: EdgeInsets.all(20.0),
+              child: Text('Brak wpisów. Dodaj pierwszy!'),
+            ))
+          else
+            ..._entries.map((entry) => Card(
+              margin: const EdgeInsets.symmetric(vertical: 5),
+              child: ListTile(
+                leading: entry.imagePath != null
+                    ? const CircleAvatar(child: Icon(Icons.camera_alt))
+                    : const CircleAvatar(child: Icon(Icons.place)),
+                title: Text(entry.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(DateFormat('dd.MM.yyyy – HH:mm').format(entry.date)),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => EntryDetailsScreen(entry: entry)),
+                  );
+                },
+              ),
+            )),
+        ],
       ),
     );
   }
